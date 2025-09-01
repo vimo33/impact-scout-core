@@ -243,6 +243,7 @@ export type Database = {
         Row: {
           created_at: string
           family_office_id: string | null
+          has_generated_kpis: boolean
           id: string
           investment_thesis: string | null
           project_title: string
@@ -251,6 +252,7 @@ export type Database = {
         Insert: {
           created_at?: string
           family_office_id?: string | null
+          has_generated_kpis?: boolean
           id?: string
           investment_thesis?: string | null
           project_title: string
@@ -259,6 +261,7 @@ export type Database = {
         Update: {
           created_at?: string
           family_office_id?: string | null
+          has_generated_kpis?: boolean
           id?: string
           investment_thesis?: string | null
           project_title?: string

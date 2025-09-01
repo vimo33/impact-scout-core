@@ -40,7 +40,7 @@ const NewProject = () => {
     if (!investmentThesis.trim()) {
       toast({
         title: "Investment Thesis Required",
-        description: "Please enter an investment thesis to generate KPIs.",
+        description: "Please enter an investment thesis to generate enhanced keywords.",
         variant: "destructive",
       });
       return;
@@ -101,26 +101,35 @@ const NewProject = () => {
 
       console.log('Project created:', projectData);
 
-      // Step 3: Call the generate-kpi-framework function
-      console.log('Generating KPI framework...');
-      const { data: kpiData, error: kpiError } = await supabase.functions.invoke('generate-kpi-framework', {
+      // Step 3: Generate semantic keywords for enhanced investment thesis
+      console.log('Generating semantic keywords...');
+      const { data: semanticData, error: semanticError } = await supabase.functions.invoke('semantic-expansion', {
         body: { 
-          project_id: projectData.id,
-          investment_thesis: investmentThesis.trim()
+          investment_category: investmentThesis.trim()
         }
       });
 
-      if (kpiError) throw kpiError;
-
-      console.log('KPI framework generated:', kpiData);
+      if (semanticError) {
+        console.warn('Failed to generate semantic keywords:', semanticError);
+      } else if (semanticData?.keywords) {
+        // Save semantic keywords to database
+        await supabase
+          .from('project_semantic_keywords')
+          .insert({
+            project_id: projectData.id,
+            input_category: investmentThesis.trim(),
+            keywords: semanticData.keywords,
+          });
+        console.log('Semantic keywords generated:', semanticData.keywords);
+      }
 
       toast({
         title: "Project Created Successfully",
-        description: "Your project and KPI framework have been created successfully.",
+        description: "Your project and enhanced investment thesis have been created successfully.",
       });
 
-      // Step 4: Redirect to workbench
-      navigate(`/app/projects/${projectData.id}/workbench`);
+      // Step 4: Redirect to project overview
+      navigate(`/app/projects/${projectData.id}`);
 
     } catch (error) {
       console.error('Error creating project and KPI framework:', error);
@@ -142,7 +151,7 @@ const NewProject = () => {
             New Project
           </h1>
           <p className="text-muted-foreground">
-            Define your investment thesis to generate a tailored KPI framework
+            Define your investment thesis to generate enhanced semantic keywords and prepare for KPI creation
           </p>
         </div>
 
@@ -196,14 +205,14 @@ const NewProject = () => {
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Project & Generating KPIs...
+                  Creating Project & Generating Enhanced Investment Thesis...
                 </>
               ) : (
-                'Create Project & Generate KPIs'
+                'Create Project and Generate Enhanced Investment Thesis'
               )}
             </Button>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              This will create your project and generate a tailored KPI framework
+              This will create your project and generate an enhanced investment thesis with semantic keywords
             </p>
           </div>
         </div>

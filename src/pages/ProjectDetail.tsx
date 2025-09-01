@@ -1,16 +1,23 @@
-import { useParams, Link } from "react-router-dom";
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Settings, Building2, Calendar } from "lucide-react";
+import { ArrowLeft, Settings, Building2, Calendar, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { useProject } from "@/hooks/useProject";
 import { InvestmentThesisSection } from "@/components/InvestmentThesisSection";
 import { SemanticKeywordsSection } from "@/components/SemanticKeywordsSection";
+import { useGenerateKpisFromEnhancedData } from "@/hooks/useGenerateKpisFromEnhancedData";
+import { useSemanticKeywords } from "@/hooks/useSemanticExpansion";
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: project, isLoading, error } = useProject(id);
+  const { data: semanticKeywords } = useSemanticKeywords(id);
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const generateKpis = useGenerateKpisFromEnhancedData();
 
   if (isLoading) {
     return (
@@ -81,6 +88,28 @@ const ProjectDetail = () => {
     return null;
   }
 
+  const handleGenerateKpis = async () => {
+    if (!project.investment_thesis) return;
+
+    try {
+      await generateKpis.mutateAsync({
+        projectId: project.id,
+        investmentThesis: project.investment_thesis,
+        selectedKeywords,
+      });
+      
+      // Navigate to workbench after successful KPI generation
+      navigate(`/app/projects/${project.id}/workbench`);
+    } catch (error) {
+      console.error("Error generating KPIs:", error);
+    }
+  };
+
+  const canGenerateKpis = project.investment_thesis && 
+                         semanticKeywords && 
+                         semanticKeywords.length > 0 && 
+                         !project.has_generated_kpis;
+
   return (
     <div className="p-6">
       <div className="max-w-4xl mx-auto">
@@ -128,12 +157,25 @@ const ProjectDetail = () => {
 
                 {/* Action Buttons */}
                 <div className="pt-4 border-t">
-                  <Button asChild>
-                    <Link to={`/app/projects/${id}/workbench`}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Open KPI Workbench
-                    </Link>
-                  </Button>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    {canGenerateKpis && (
+                      <Button 
+                        onClick={handleGenerateKpis}
+                        disabled={selectedKeywords.length === 0 || generateKpis.isPending}
+                      >
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        {generateKpis.isPending ? "Generating..." : `Generate KPIs with Enhanced Data (${selectedKeywords.length} keywords)`}
+                      </Button>
+                    )}
+                    {project.has_generated_kpis && (
+                      <Button asChild>
+                        <Link to={`/app/projects/${id}/workbench`}>
+                          <Settings className="mr-2 h-4 w-4" />
+                          Open KPI Workbench
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -147,7 +189,12 @@ const ProjectDetail = () => {
 
           {/* Semantic Keywords Section */}
           <div className="mb-8">
-            <SemanticKeywordsSection project={project} />
+            <SemanticKeywordsSection 
+              project={project}
+              selectedKeywords={selectedKeywords}
+              onKeywordSelectionChange={setSelectedKeywords}
+              showSelection={canGenerateKpis}
+            />
           </div>
         </div>
       </div>

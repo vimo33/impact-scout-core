@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Sparkles, Plus, X, RefreshCw, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { useSemanticKeywords, useGenerateSemanticKeywords, useUpdateSemanticKeywords } from "@/hooks/useSemanticExpansion";
@@ -16,13 +17,22 @@ interface Project {
   created_at: string;
   family_office_id: string | null;
   family_office_name: string | null;
+  has_generated_kpis: boolean;
 }
 
 interface SemanticKeywordsSectionProps {
   project: Project;
+  selectedKeywords?: string[];
+  onKeywordSelectionChange?: (keywords: string[]) => void;
+  showSelection?: boolean;
 }
 
-export const SemanticKeywordsSection = ({ project }: SemanticKeywordsSectionProps) => {
+export const SemanticKeywordsSection = ({ 
+  project, 
+  selectedKeywords = [], 
+  onKeywordSelectionChange,
+  showSelection = false 
+}: SemanticKeywordsSectionProps) => {
   const [newKeyword, setNewKeyword] = useState("");
   const [editingKeywordSet, setEditingKeywordSet] = useState<string | null>(null);
   const { data: semanticKeywords, isLoading } = useSemanticKeywords(project.id);
@@ -74,6 +84,30 @@ export const SemanticKeywordsSection = ({ project }: SemanticKeywordsSectionProp
     });
   };
 
+  const handleKeywordToggle = (keyword: string, checked: boolean) => {
+    if (!onKeywordSelectionChange) return;
+    
+    let newSelection;
+    if (checked) {
+      newSelection = [...selectedKeywords, keyword];
+    } else {
+      newSelection = selectedKeywords.filter(k => k !== keyword);
+    }
+    onKeywordSelectionChange(newSelection);
+  };
+
+  const handleSelectAll = () => {
+    if (!onKeywordSelectionChange || !semanticKeywords) return;
+    
+    const allKeywords = semanticKeywords.flatMap(set => set.keywords);
+    onKeywordSelectionChange(allKeywords);
+  };
+
+  const handleSelectNone = () => {
+    if (!onKeywordSelectionChange) return;
+    onKeywordSelectionChange([]);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -117,6 +151,24 @@ export const SemanticKeywordsSection = ({ project }: SemanticKeywordsSectionProp
               >
                 <RefreshCw className="h-4 w-4" />
               </Button>
+            )}
+            {showSelection && semanticKeywords && semanticKeywords.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleSelectAll}
+                >
+                  Select All
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleSelectNone}
+                >
+                  Select None
+                </Button>
+              </div>
             )}
             <Button 
               variant="outline" 
@@ -179,17 +231,25 @@ export const SemanticKeywordsSection = ({ project }: SemanticKeywordsSectionProp
                 
                 <div className="flex flex-wrap gap-2">
                   {keywordSet.keywords.map((keyword, index) => (
-                    <Badge key={index} variant="secondary" className="gap-1">
-                      {keyword}
-                      {editingKeywordSet === keywordSet.id && (
-                        <button
-                          onClick={() => handleRemoveKeyword(keywordSet.id, keywordSet.keywords, keyword)}
-                          className="ml-1 hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                    <div key={index} className="flex items-center gap-1">
+                      {showSelection && (
+                        <Checkbox
+                          checked={selectedKeywords.includes(keyword)}
+                          onCheckedChange={(checked) => handleKeywordToggle(keyword, checked as boolean)}
+                        />
                       )}
-                    </Badge>
+                      <Badge variant="secondary" className="gap-1">
+                        {keyword}
+                        {editingKeywordSet === keywordSet.id && (
+                          <button
+                            onClick={() => handleRemoveKeyword(keywordSet.id, keywordSet.keywords, keyword)}
+                            className="ml-1 hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </Badge>
+                    </div>
                   ))}
                 </div>
 

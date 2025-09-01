@@ -8,6 +8,7 @@ interface Project {
   created_at: string;
   family_office_id: string | null;
   family_office_name: string | null;
+  has_generated_kpis: boolean;
 }
 
 export const useProject = (projectId: string | undefined) => {
@@ -26,6 +27,7 @@ export const useProject = (projectId: string | undefined) => {
           investment_thesis,
           created_at,
           family_office_id,
+          has_generated_kpis,
           family_offices:family_office_id(name)
         `)
         .eq("id", projectId)

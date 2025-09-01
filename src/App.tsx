@@ -17,6 +17,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Workbench from "./pages/Workbench";
 import NotFound from "./pages/NotFound";
 import { CompanyListPlaceholder, ShortlistPlaceholder, OutreachPlaceholder, ProjectReportPlaceholder } from "@/components/PlaceholderPages";
+import SettingsPrompts from "./pages/SettingsPrompts";
 
 const queryClient = new QueryClient();
 
@@ -114,6 +115,13 @@ const App = () => (
                   <ProjectLayout>
                     <ProjectReportPlaceholder />
                   </ProjectLayout>
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/app/settings/prompts" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <SettingsPrompts />
                 </AppLayout>
               </ProtectedRoute>
             } />

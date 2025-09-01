@@ -1,4 +1,4 @@
-import { LayoutDashboard, Plus } from "lucide-react";
+import { LayoutDashboard, Plus, Settings } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -22,6 +22,11 @@ const navigationItems = [
     title: "New Project",
     url: "/app/new-project",
     icon: Plus,
+  },
+  {
+    title: "Settings",
+    url: "/app/settings/prompts",
+    icon: Settings,
   },
 ];
 

@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      companies: {
+        Row: {
+          company_description: string | null
+          company_name: string
+          created_at: string
+          id: string
+          project_id: string
+          relevance_score: number | null
+          website_url: string | null
+        }
+        Insert: {
+          company_description?: string | null
+          company_name: string
+          created_at?: string
+          id?: string
+          project_id: string
+          relevance_score?: number | null
+          website_url?: string | null
+        }
+        Update: {
+          company_description?: string | null
+          company_name?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          relevance_score?: number | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companies_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_kpi_data: {
+        Row: {
+          company_id: string
+          data_value: string | null
+          id: string
+          kpi_id: string
+          source_url: string | null
+          status: string
+        }
+        Insert: {
+          company_id: string
+          data_value?: string | null
+          id?: string
+          kpi_id: string
+          source_url?: string | null
+          status?: string
+        }
+        Update: {
+          company_id?: string
+          data_value?: string | null
+          id?: string
+          kpi_id?: string
+          source_url?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_kpi_data_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_kpi_data_kpi_id_fkey"
+            columns: ["kpi_id"]
+            isOneToOne: false
+            referencedRelation: "kpis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       family_offices: {
         Row: {
           created_at: string
@@ -128,6 +208,33 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      project_semantic_keywords: {
+        Row: {
+          created_at: string
+          id: string
+          input_category: string
+          keywords: string[]
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          input_category: string
+          keywords: string[]
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          input_category?: string
+          keywords?: string[]
+          project_id?: string
           updated_at?: string
         }
         Relationships: []

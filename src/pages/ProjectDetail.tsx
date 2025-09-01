@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Settings } from "lucide-react";
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,10 +25,21 @@ const ProjectDetail = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  This is a placeholder page for project details. 
-                  The full project management interface will be implemented here.
-                </p>
+                <div className="space-y-4">
+                  <p className="text-muted-foreground">
+                    This is a placeholder page for project details. 
+                    The full project management interface will be implemented here.
+                  </p>
+                  
+                  <div className="pt-4">
+                    <Button asChild>
+                      <Link to={`/app/projects/${id}/workbench`}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        Open KPI Workbench
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
         </div>

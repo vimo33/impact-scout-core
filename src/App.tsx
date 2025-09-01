@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NewProject from "./pages/NewProject";
 import ProjectDetail from "./pages/ProjectDetail";
+import Workbench from "./pages/Workbench";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,13 @@ const App = () => (
               <ProtectedRoute>
                 <AppLayout>
                   <ProjectDetail />
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/app/projects/:id/workbench" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Workbench />
                 </AppLayout>
               </ProtectedRoute>
             } />

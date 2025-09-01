@@ -1,15 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { LogOut, User } from "lucide-react";
 
 const Header = () => {
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  
+  let navigate;
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    // Handle case where router context is not available
+    navigate = () => {};
+  }
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/");
+    if (navigate) {
+      navigate("/");
+    } else {
+      window.location.href = "/";
+    }
   };
 
   return (

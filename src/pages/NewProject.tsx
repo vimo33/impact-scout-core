@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { X, Loader2, Plus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const NewProject = () => {
   const navigate = useNavigate();
@@ -15,124 +14,13 @@ const NewProject = () => {
   const { toast } = useToast();
   const [projectTitle, setProjectTitle] = useState('');
   const [investmentThesis, setInvestmentThesis] = useState('');
-  const [aiKeywords, setAiKeywords] = useState<string[]>([]);
-  const [editableKeywords, setEditableKeywords] = useState<string[]>([]);
-  const [showKeywords, setShowKeywords] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editingValue, setEditingValue] = useState('');
 
-  // Show mock keywords after a delay when user types (only if no AI keywords generated yet)
-  const mockKeywords = [
-    'Conformational Stability',
-    'Recombinant Proteins',
-    'Biomarker Discovery',
-    'Clinical Trials',
-    'Therapeutic Proteins',
-    'Drug Development'
-  ];
-
-  useEffect(() => {
-    if (investmentThesis.trim().length > 2 && aiKeywords.length === 0) {
-      const timer = setTimeout(() => {
-        setShowKeywords(true);
-      }, 800);
-      return () => clearTimeout(timer);
-    } else if (aiKeywords.length === 0) {
-      setShowKeywords(false);
-    }
-  }, [investmentThesis, aiKeywords]);
-
-  const generateKeywords = async () => {
-    if (!investmentThesis.trim()) {
-      toast({
-        title: "Input Required",
-        description: "Please enter an investment thesis or category first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    
-    try {
-      console.log('Calling semantic-expansion function with:', investmentThesis);
-      
-      const { data, error } = await supabase.functions.invoke('semantic-expansion', {
-        body: { investment_category: investmentThesis }
-      });
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
-      }
-
-      if (!data?.keywords || !Array.isArray(data.keywords)) {
-        console.error('Invalid response format:', data);
-        throw new Error('Invalid response format from AI service');
-      }
-
-      console.log('Generated keywords:', data.keywords);
-      
-      setAiKeywords(data.keywords);
-      setEditableKeywords([...data.keywords]);
-      setShowKeywords(false); // Hide mock keywords
-      
-      toast({
-        title: "Keywords Generated",
-        description: `Generated ${data.keywords.length} relevant keywords for your investment category.`,
-      });
-
-    } catch (error) {
-      console.error('Error generating keywords:', error);
-      toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate keywords. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const removeKeyword = (index: number) => {
-    const newKeywords = editableKeywords.filter((_, i) => i !== index);
-    setEditableKeywords(newKeywords);
-  };
-
-  const startEditing = (index: number) => {
-    setEditingIndex(index);
-    setEditingValue(editableKeywords[index]);
-  };
-
-  const saveEditing = () => {
-    if (editingIndex !== null && editingValue.trim()) {
-      const newKeywords = [...editableKeywords];
-      newKeywords[editingIndex] = editingValue.trim();
-      setEditableKeywords(newKeywords);
-    }
-    setEditingIndex(null);
-    setEditingValue('');
-  };
-
-  const cancelEditing = () => {
-    setEditingIndex(null);
-    setEditingValue('');
-  };
-
-  const addCustomKeyword = () => {
-    const newKeyword = prompt('Enter a custom keyword:');
-    if (newKeyword && newKeyword.trim()) {
-      setEditableKeywords([...editableKeywords, newKeyword.trim()]);
-    }
-  };
-
-  const saveProject = async () => {
+  const generateKpiFramework = async () => {
     if (!user) {
       toast({
         title: "Authentication Required",
-        description: "You must be logged in to save a project.",
+        description: "You must be logged in to create a project.",
         variant: "destructive",
       });
       return;
@@ -147,37 +35,64 @@ const NewProject = () => {
       return;
     }
 
-    setIsSaving(true);
+    if (!investmentThesis.trim()) {
+      toast({
+        title: "Investment Thesis Required",
+        description: "Please enter an investment thesis to generate KPIs.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
     
     try {
-      const { data, error } = await (supabase as any)
+      // Step 1: Create the project
+      console.log('Creating project...');
+      const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .insert({
           project_title: projectTitle.trim(),
-          investment_thesis: investmentThesis.trim() || null,
+          investment_thesis: investmentThesis.trim(),
           user_id: user.id
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (projectError) throw projectError;
 
-      toast({
-        title: "Project Saved",
-        description: "Your project has been created successfully.",
+      console.log('Project created:', projectData);
+
+      // Step 2: Call the generate-kpi-framework function
+      console.log('Generating KPI framework...');
+      const { data: kpiData, error: kpiError } = await supabase.functions.invoke('generate-kpi-framework', {
+        body: { 
+          project_id: projectData.id,
+          investment_thesis: investmentThesis.trim()
+        }
       });
 
-      // Navigate to the dashboard
-      navigate('/app/dashboard');
-    } catch (error) {
-      console.error('Error saving project:', error);
+      if (kpiError) throw kpiError;
+
+      console.log('KPI framework generated:', kpiData);
+
       toast({
-        title: "Save Failed",
-        description: error instanceof Error ? error.message : "Failed to save project. Please try again.",
+        title: "KPI Framework Generated",
+        description: "Your project and KPI framework have been created successfully.",
+      });
+
+      // Step 3: Redirect to workbench
+      navigate(`/app/projects/${projectData.id}/workbench`);
+
+    } catch (error) {
+      console.error('Error creating project and KPI framework:', error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate KPI framework. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsSaving(false);
+      setIsGenerating(false);
     }
   };
 
@@ -222,140 +137,25 @@ const NewProject = () => {
             />
           </div>
 
-          {showKeywords && aiKeywords.length === 0 && (
-            <div className="space-y-3 animate-in fade-in-50 duration-500">
-              <Label className="text-sm font-medium text-muted-foreground">
-                AI-Suggested Keywords (Preview)
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {mockKeywords.map((keyword, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-secondary/80 transition-colors opacity-60"
-                  >
-                    {keyword}
-                  </Badge>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Click "Generate KPI Framework" to get AI-powered keyword suggestions
-              </p>
-            </div>
-          )}
-
-          {editableKeywords.length > 0 && (
-            <div className="space-y-4 animate-in fade-in-50 duration-500">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">
-                  Generated Keywords ({editableKeywords.length})
-                </Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addCustomKeyword}
-                  className="h-8 px-3"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add Custom
-                </Button>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                {editableKeywords.map((keyword, index) => (
-                  <div key={index} className="relative">
-                    {editingIndex === index ? (
-                      <div className="flex items-center gap-1">
-                        <Input
-                          value={editingValue}
-                          onChange={(e) => setEditingValue(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') saveEditing();
-                            if (e.key === 'Escape') cancelEditing();
-                          }}
-                          className="h-8 w-32 text-xs"
-                          autoFocus
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={saveEditing}
-                          className="h-6 w-6 p-0"
-                        >
-                          ✓
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={cancelEditing}
-                          className="h-6 w-6 p-0"
-                        >
-                          ✕
-                        </Button>
-                      </div>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className="cursor-pointer hover:bg-secondary/80 transition-colors pr-6 relative group"
-                        onClick={() => startEditing(index)}
-                      >
-                        {keyword}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeKeyword(index);
-                          }}
-                          className="absolute -top-1 -right-1 h-4 w-4 p-0 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-2 w-2" />
-                        </Button>
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              <p className="text-xs text-muted-foreground">
-                Click on keywords to edit them, or click the × to remove them. These will be used to generate your KPI framework.
-              </p>
-            </div>
-          )}
-
-          <div className="flex gap-4">
+          <div className="pt-4">
             <Button
               size="lg"
-              variant="outline"
-              className="flex-1 h-12 text-base font-semibold"
-              disabled={!projectTitle.trim() || isSaving}
-              onClick={saveProject}
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving Project...
-                </>
-              ) : (
-                'Save Project'
-              )}
-            </Button>
-
-            <Button
-              size="lg"
-              className="flex-1 h-12 text-base font-semibold"
-              disabled={investmentThesis.trim().length < 3 || isGenerating || isSaving}
-              onClick={generateKeywords}
+              className="w-full h-12 text-base font-semibold"
+              disabled={!projectTitle.trim() || !investmentThesis.trim() || isGenerating}
+              onClick={generateKpiFramework}
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Keywords...
+                  Creating Project & Generating KPIs...
                 </>
               ) : (
                 'Generate KPI Framework'
               )}
             </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              This will create your project and generate a tailored KPI framework
+            </p>
           </div>
         </div>
       </div>

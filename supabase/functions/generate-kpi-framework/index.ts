@@ -10,7 +10,7 @@ const corsHeaders = {
 interface KPI {
   kpi_name: string;
   kpi_description: string;
-  category: 'Scientific/Technical' | 'Operational' | 'Financial' | 'Impact';
+  category: 'Scientific/Technical' | 'Operational' | 'Financial' | 'Impact' | 'Social' | 'Environmental' | 'Governance' | 'Regulatory' | 'Market';
 }
 
 serve(async (req) => {
@@ -177,9 +177,10 @@ serve(async (req) => {
           throw new Error('Invalid KPI structure');
         }
         
-        const validCategories = ['Scientific/Technical', 'Operational', 'Financial', 'Impact'];
+        const validCategories = ['Scientific/Technical', 'Operational', 'Financial', 'Impact', 'Social', 'Environmental', 'Governance', 'Regulatory', 'Market'];
         if (!validCategories.includes(kpi.category)) {
-          throw new Error(`Invalid category: ${kpi.category}`);
+          console.error('Invalid category found:', kpi.category, 'Valid categories:', validCategories);
+          throw new Error(`Invalid category: ${kpi.category}. Valid categories: ${validCategories.join(', ')}`);
         }
       }
       

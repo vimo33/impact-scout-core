@@ -60,7 +60,7 @@ const NewProject = () => {
           .from('family_offices')
           .select('id')
           .eq('name', familyOffice.trim())
-          .single();
+          .maybeSingle();
 
         if (searchError && searchError.code !== 'PGRST116') {
           throw searchError;

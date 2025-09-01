@@ -1,1 +1,4 @@
 project_id = "mykomhnyvbnvpbyhukaq"
+
+[functions.semantic-expansion]
+verify_jwt = false

@@ -14,6 +14,79 @@ export type Database = {
   }
   public: {
     Tables: {
+      kpi_frameworks: {
+        Row: {
+          created_at: string
+          framework_name: string
+          id: string
+          project_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          framework_name: string
+          id?: string
+          project_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          framework_name?: string
+          id?: string
+          project_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_frameworks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpis: {
+        Row: {
+          category: string
+          created_at: string
+          framework_id: string
+          id: string
+          kpi_description: string | null
+          kpi_name: string
+          source_snippet: string | null
+          source_url: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          framework_id: string
+          id?: string
+          kpi_description?: string | null
+          kpi_name: string
+          source_snippet?: string | null
+          source_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          framework_id?: string
+          id?: string
+          kpi_description?: string | null
+          kpi_name?: string
+          source_snippet?: string | null
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpis_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_frameworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -38,6 +111,30 @@ export type Database = {
           id?: string
           last_name?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          id: string
+          investment_thesis: string | null
+          project_title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          investment_thesis?: string | null
+          project_title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          investment_thesis?: string | null
+          project_title?: string
+          user_id?: string
         }
         Relationships: []
       }

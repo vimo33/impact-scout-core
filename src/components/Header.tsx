@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Home, LayoutDashboard } from "lucide-react";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -33,9 +33,16 @@ const Header = () => {
           </Link>
           
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-smooth">
-              Platform
-            </a>
+            <Link to="/" className="text-foreground hover:text-primary transition-colors flex items-center space-x-1">
+              <Home className="h-4 w-4" />
+              <span>Home</span>
+            </Link>
+            {user && (
+              <Link to="/app/dashboard" className="text-foreground hover:text-primary transition-colors flex items-center space-x-1">
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Dashboard</span>
+              </Link>
+            )}
             <a href="#insights" className="text-muted-foreground hover:text-foreground transition-smooth">
               Insights
             </a>

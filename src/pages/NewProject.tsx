@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { X, Loader2, Plus } from 'lucide-react';
 
 const NewProject = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [projectTitle, setProjectTitle] = useState('');
   const [investmentThesis, setInvestmentThesis] = useState('');
   const [aiKeywords, setAiKeywords] = useState<string[]>([]);
   const [editableKeywords, setEditableKeywords] = useState<string[]>([]);
   const [showKeywords, setShowKeywords] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState('');
-  const { toast } = useToast();
 
   // Show mock keywords after a delay when user types (only if no AI keywords generated yet)
   const mockKeywords = [
@@ -122,6 +128,59 @@ const NewProject = () => {
     }
   };
 
+  const saveProject = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to save a project.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!projectTitle.trim()) {
+      toast({
+        title: "Project Title Required",
+        description: "Please enter a title for your project.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    
+    try {
+      const { data, error } = await (supabase as any)
+        .from('projects')
+        .insert({
+          project_title: projectTitle.trim(),
+          investment_thesis: investmentThesis.trim() || null,
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Project Saved",
+        description: "Your project has been created successfully.",
+      });
+
+      // Navigate to the dashboard
+      navigate('/app/dashboard');
+    } catch (error) {
+      console.error('Error saving project:', error);
+      toast({
+        title: "Save Failed",
+        description: error instanceof Error ? error.message : "Failed to save project. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-2xl mx-auto space-y-8">
@@ -135,6 +194,20 @@ const NewProject = () => {
         </div>
 
         <div className="space-y-6">
+          <div className="space-y-3">
+            <Label htmlFor="project-title" className="text-base font-medium">
+              Project Title
+            </Label>
+            <Input
+              id="project-title"
+              type="text"
+              placeholder="e.g., Biotech Therapeutics Analysis Q1 2024"
+              value={projectTitle}
+              onChange={(e) => setProjectTitle(e.target.value)}
+              className="h-12 text-base"
+            />
+          </div>
+
           <div className="space-y-3">
             <Label htmlFor="investment-thesis" className="text-base font-medium">
               Investment Thesis or Category
@@ -250,21 +323,40 @@ const NewProject = () => {
             </div>
           )}
 
-          <Button
-            size="lg"
-            className="w-full h-12 text-base font-semibold"
-            disabled={investmentThesis.trim().length < 3 || isGenerating}
-            onClick={generateKeywords}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Keywords...
-              </>
-            ) : (
-              'Generate KPI Framework'
-            )}
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              size="lg"
+              variant="outline"
+              className="flex-1 h-12 text-base font-semibold"
+              disabled={!projectTitle.trim() || isSaving}
+              onClick={saveProject}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving Project...
+                </>
+              ) : (
+                'Save Project'
+              )}
+            </Button>
+
+            <Button
+              size="lg"
+              className="flex-1 h-12 text-base font-semibold"
+              disabled={investmentThesis.trim().length < 3 || isGenerating || isSaving}
+              onClick={generateKeywords}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Keywords...
+                </>
+              ) : (
+                'Generate KPI Framework'
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -49,7 +49,7 @@ const Login = () => {
 
   // Redirect if user is already authenticated
   if (user && !loading) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app/dashboard" replace />;
   }
 
   const onLogin = async (data: LoginFormData) => {

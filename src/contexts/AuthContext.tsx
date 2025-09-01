@@ -66,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Welcome back!",
         description: "You have successfully signed in.",
       });
+      // Note: Navigation will be handled by the Login component redirect
     }
 
     setLoading(false);

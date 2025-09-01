@@ -4,9 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Folder, Plus, ExternalLink } from "lucide-react";
+import { Folder, Plus, ExternalLink, Building2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface Project {
@@ -15,32 +16,86 @@ interface Project {
   investment_thesis: string | null;
   created_at: string;
   user_id: string;
+  family_office_id: string | null;
+  family_office_name: string | null;
 }
 
-const useProjects = () => {
+interface FamilyOffice {
+  id: string;
+  name: string;
+}
+
+const useFamilyOffices = () => {
+  return useQuery({
+    queryKey: ["family_offices"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("family_offices")
+        .select("id, name")
+        .order("name");
+
+      if (error) throw error;
+      return (data || []) as FamilyOffice[];
+    },
+  });
+};
+
+const useProjects = (familyOfficeFilter: string, sortOrder: string) => {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ["projects", user?.id],
+    queryKey: ["projects", user?.id, familyOfficeFilter, sortOrder],
     queryFn: async () => {
       if (!user) throw new Error("User not authenticated");
       
-      // Use any type to bypass TypeScript errors since projects table may not be in types yet
-      const { data, error } = await (supabase as any)
+      let query = supabase
         .from("projects")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .select(`
+          id,
+          project_title,
+          investment_thesis,
+          created_at,
+          user_id,
+          family_office_id,
+          family_offices:family_office_id(name)
+        `)
+        .eq("user_id", user.id);
+
+      // Apply family office filter
+      if (familyOfficeFilter !== "all") {
+        if (familyOfficeFilter === "unassigned") {
+          query = query.is("family_office_id", null);
+        } else {
+          query = query.eq("family_office_id", familyOfficeFilter);
+        }
+      }
+
+      // Apply sorting
+      const ascending = sortOrder === "oldest";
+      query = query.order("created_at", { ascending });
+
+      const { data, error } = await query;
 
       if (error) throw error;
-      return (data || []) as Project[];
+      
+      // Transform the data to flatten the family office name
+      const transformedData = (data || []).map(project => ({
+        ...project,
+        family_office_name: project.family_offices?.name || null
+      }));
+
+      return transformedData as Project[];
     },
     enabled: !!user,
   });
 };
 
 const Dashboard = () => {
-  const { data: projects, isLoading, error } = useProjects();
+  const [familyOfficeFilter, setFamilyOfficeFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("newest");
+  
+  const { data: familyOffices } = useFamilyOffices();
+  const { data: projects, isLoading, error } = useProjects(familyOfficeFilter, sortOrder);
 
   if (isLoading) {
     return (
@@ -97,7 +152,7 @@ const Dashboard = () => {
     <div className="p-6">
       <div className="max-w-6xl mx-auto">
         {/* Hero Section */}
-        <div className="mb-12">
+        <div className="mb-8">
           <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
             <div>
               <h1 className="text-4xl font-bold text-foreground mb-2">
@@ -116,6 +171,46 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Filter and Sort Controls */}
+        <div className="mb-8 p-4 border rounded-lg bg-card">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Filter by Family Office
+              </label>
+              <Select value={familyOfficeFilter} onValueChange={setFamilyOfficeFilter}>
+                <SelectTrigger className="w-full sm:w-[250px]">
+                  <SelectValue placeholder="All Family Offices" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Family Offices</SelectItem>
+                  <SelectItem value="unassigned">Unassigned Projects</SelectItem>
+                  {familyOffices?.map((office) => (
+                    <SelectItem key={office.id} value={office.id}>
+                      {office.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex-1">
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Sort by Date
+              </label>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Newest First" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
         {/* Projects Grid */}
         {projects && projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -124,17 +219,23 @@ const Dashboard = () => {
                 <Link to={`/app/projects/${project.id}`} className="block">
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-2 mb-2">
+                      <div className="flex items-center space-x-2 mb-3">
                         <Folder className="h-5 w-5 text-primary" />
                         <span className="text-sm text-muted-foreground">
-                          {format(new Date(project.created_at), "MMM d, yyyy")}
+                          {format(new Date(project.created_at), "MMMM d, yyyy")}
                         </span>
                       </div>
                       <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
-                    <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
+                    <CardTitle className="text-xl mb-3 group-hover:text-primary transition-colors">
                       {project.project_title}
                     </CardTitle>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {project.family_office_name || "Unassigned"}
+                      </span>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-sm leading-relaxed">

@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      family_offices: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       kpi_frameworks: {
         Row: {
           created_at: string
@@ -117,6 +135,7 @@ export type Database = {
       projects: {
         Row: {
           created_at: string
+          family_office_id: string | null
           id: string
           investment_thesis: string | null
           project_title: string
@@ -124,6 +143,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          family_office_id?: string | null
           id?: string
           investment_thesis?: string | null
           project_title: string
@@ -131,12 +151,21 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          family_office_id?: string | null
           id?: string
           investment_thesis?: string | null
           project_title?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_projects_family_office"
+            columns: ["family_office_id"]
+            isOneToOne: false
+            referencedRelation: "family_offices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -167,6 +167,33 @@ export type Database = {
           },
         ]
       }
+      system_prompts: {
+        Row: {
+          created_at: string
+          id: string
+          prompt_name: string
+          prompt_text: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prompt_name: string
+          prompt_text: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prompt_name?: string
+          prompt_text?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

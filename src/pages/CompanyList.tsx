@@ -5,14 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import CompanyListDisplay from "@/components/CompanyListDisplay";
+import { useProcessManualResearch } from "@/hooks/useProcessManualResearch";
+import { Loader2 } from "lucide-react";
 
 const CompanyList = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const [researchData, setResearchData] = useState("");
+  
+  const processManualResearch = useProcessManualResearch();
 
   const handleProcessData = () => {
-    // Placeholder for future functionality
-    console.log("Processing data:", researchData);
+    if (!projectId || !researchData.trim()) return;
+    
+    processManualResearch.mutate({
+      projectId,
+      researchJsonString: researchData,
+    }, {
+      onSuccess: () => {
+        // Clear the textarea after successful processing
+        setResearchData("");
+      }
+    });
   };
 
   return (
@@ -48,9 +61,12 @@ const CompanyList = () => {
             <Button 
               onClick={handleProcessData}
               className="w-full sm:w-auto"
-              disabled={!researchData.trim()}
+              disabled={!researchData.trim() || processManualResearch.isPending}
             >
-              Process & Save Companies
+              {processManualResearch.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {processManualResearch.isPending ? "Processing..." : "Process & Save Companies"}
             </Button>
           </CardContent>
         </Card>

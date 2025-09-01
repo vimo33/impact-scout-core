@@ -98,39 +98,29 @@ serve(async (req) => {
     }
     console.log('OpenAI API key retrieved successfully');
 
-    // Construct OpenAI prompt
-    const prompt = `You are an expert impact investment analyst with deep expertise in ESG (Environmental, Social, and Governance) metrics and impact measurement frameworks. 
+    // Fetch prompt template from database
+    console.log('Fetching KPI generation prompt from database...');
+    const { data: promptData, error: promptError } = await supabase
+      .from('system_prompts')
+      .select('prompt_text')
+      .eq('prompt_name', 'kpi_generation_prompt')
+      .maybeSingle();
 
-Your task is to generate a comprehensive list of 15-20 Key Performance Indicators (KPIs) for the following investment thesis:
+    if (promptError) {
+      console.error('Error fetching prompt from database:', promptError);
+      throw new Error('Failed to fetch KPI generation prompt from database');
+    }
 
-"${investment_thesis}"
+    if (!promptData || !promptData.prompt_text) {
+      console.error('KPI generation prompt not found in database');
+      throw new Error('KPI generation prompt not found in system_prompts table. Please ensure a prompt with prompt_name "kpi_generation_prompt" exists.');
+    }
 
-For each KPI, you must:
-1. Provide a clear, concise name (2-8 words)
-2. Include a detailed description explaining what it measures and why it's important
-3. Categorize it into EXACTLY ONE of these four categories:
-   - "Scientific/Technical": Technical metrics, R&D outcomes, innovation measures, patents, technical performance
-   - "Operational": Business operations, efficiency, scalability, supply chain, workforce metrics
-   - "Financial": Revenue, profitability, cost metrics, ROI, financial sustainability
-   - "Impact": Environmental impact, social outcomes, ESG metrics, beneficiary reach, SDG alignment
-
-Return your response as a valid JSON array of objects with this exact structure:
-[
-  {
-    "kpi_name": "Clear KPI Name",
-    "kpi_description": "Detailed explanation of what this KPI measures, why it's important for this investment thesis, and how it should be tracked or calculated.",
-    "category": "Scientific/Technical"
-  }
-]
-
-Ensure the KPIs are:
-- Specific to the investment thesis
-- Measurable and quantifiable
-- Relevant to impact investors
-- Balanced across all four categories
-- Actionable for portfolio monitoring
-
-Return ONLY the JSON array, no additional text or formatting.`;
+    console.log('Successfully fetched prompt from database');
+    
+    // Construct OpenAI prompt using the fetched template
+    // Replace placeholder in the prompt template with the actual investment thesis
+    const prompt = promptData.prompt_text.replace('${investment_thesis}', investment_thesis);
 
     // Call OpenAI API
     console.log('Calling OpenAI API for investment thesis:', investment_thesis.substring(0, 100) + '...');

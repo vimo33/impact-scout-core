@@ -143,12 +143,6 @@ const Workbench = () => {
     <div className="p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <Button asChild variant="ghost" className="mb-4">
-            <Link to={`/app/projects/${id}`}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Project
-            </Link>
-          </Button>
           
           <div className="flex items-center justify-between mb-6">
             <div>

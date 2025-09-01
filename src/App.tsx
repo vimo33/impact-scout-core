@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AppLayout from "@/components/AppLayout";
+import ProjectLayout from "@/components/ProjectLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -15,6 +16,7 @@ import NewProject from "./pages/NewProject";
 import ProjectDetail from "./pages/ProjectDetail";
 import Workbench from "./pages/Workbench";
 import NotFound from "./pages/NotFound";
+import { CompanyListPlaceholder, ShortlistPlaceholder, OutreachPlaceholder, ProjectReportPlaceholder } from "@/components/PlaceholderPages";
 
 const queryClient = new QueryClient();
 
@@ -64,14 +66,54 @@ const App = () => (
             <Route path="/app/projects/:id" element={
               <ProtectedRoute>
                 <AppLayout>
-                  <ProjectDetail />
+                  <ProjectLayout>
+                    <ProjectDetail />
+                  </ProjectLayout>
                 </AppLayout>
               </ProtectedRoute>
             } />
             <Route path="/app/projects/:id/workbench" element={
               <ProtectedRoute>
                 <AppLayout>
-                  <Workbench />
+                  <ProjectLayout>
+                    <Workbench />
+                  </ProjectLayout>
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/app/projects/:id/companies" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectLayout>
+                    <CompanyListPlaceholder />
+                  </ProjectLayout>
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/app/projects/:id/shortlist" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectLayout>
+                    <ShortlistPlaceholder />
+                  </ProjectLayout>
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/app/projects/:id/outreach" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectLayout>
+                    <OutreachPlaceholder />
+                  </ProjectLayout>
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/app/projects/:id/report" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectLayout>
+                    <ProjectReportPlaceholder />
+                  </ProjectLayout>
                 </AppLayout>
               </ProtectedRoute>
             } />

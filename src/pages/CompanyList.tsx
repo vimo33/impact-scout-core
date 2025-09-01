@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import CompanyListDisplay from "@/components/CompanyListDisplay";
 
 const CompanyList = () => {
+  const { id: projectId } = useParams<{ id: string }>();
   const [researchData, setResearchData] = useState("");
 
   const handleProcessData = () => {
@@ -51,6 +54,9 @@ const CompanyList = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Company List Display */}
+        {projectId && <CompanyListDisplay projectId={projectId} />}
       </div>
     </div>
   );

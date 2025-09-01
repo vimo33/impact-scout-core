@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -72,21 +73,47 @@ serve(async (req) => {
 
     console.log('OpenAI API key retrieved successfully');
 
-    // Construct the prompt for semantic expansion
-    const prompt = `You are an expert in investment research and financial terminology. Given the investment category "${investment_category}", generate a comprehensive list of related keywords, technical synonyms, and adjacent concepts that would be relevant for impact investment research.
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-Focus on:
-- Technical terms and industry jargon
-- Related sectors and subsectors
-- Key performance indicators (KPIs)
-- Regulatory and compliance terms
-- Scientific and technical concepts
-- Market segments and applications
-- Stakeholder groups
+    // Fetch prompt template from database
+    console.log('Fetching semantic expansion prompt from database...');
+    const { data: promptData, error: promptError } = await supabase
+      .from('system_prompts')
+      .select('prompt_text')
+      .eq('prompt_name', 'semantic_expansion_prompt')
+      .maybeSingle();
 
-Return exactly 15-20 highly relevant terms as a JSON array of strings. Each term should be precise and professionally relevant for investment analysis.
+    if (promptError) {
+      console.error('Error fetching prompt from database:', promptError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch semantic expansion prompt from database' }), 
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
-Example format: ["term1", "term2", "term3", ...]`;
+    if (!promptData || !promptData.prompt_text) {
+      console.error('Semantic expansion prompt not found in database');
+      return new Response(
+        JSON.stringify({ error: 'Semantic expansion prompt not found in system_prompts table. Please ensure a prompt with prompt_name "semantic_expansion_prompt" exists.' }), 
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log('Successfully fetched prompt from database');
+    
+    // Construct the prompt for semantic expansion using the fetched template
+    // Replace placeholder in the prompt template with the actual investment category
+    const prompt = promptData.prompt_text.replace('${investment_category}', investment_category);
 
     console.log('Calling OpenAI API with prompt for category:', investment_category);
 

@@ -247,6 +247,7 @@ export type Database = {
           id: string
           investment_thesis: string | null
           project_title: string
+          selected_keywords: Json | null
           user_id: string
         }
         Insert: {
@@ -256,6 +257,7 @@ export type Database = {
           id?: string
           investment_thesis?: string | null
           project_title: string
+          selected_keywords?: Json | null
           user_id: string
         }
         Update: {
@@ -265,6 +267,7 @@ export type Database = {
           id?: string
           investment_thesis?: string | null
           project_title?: string
+          selected_keywords?: Json | null
           user_id?: string
         }
         Relationships: [

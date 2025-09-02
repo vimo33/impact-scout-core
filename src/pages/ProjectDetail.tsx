@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,14 +10,16 @@ import { InvestmentThesisSection } from "@/components/InvestmentThesisSection";
 import { SemanticKeywordsSection } from "@/components/SemanticKeywordsSection";
 import { useGenerateKpisFromEnhancedData } from "@/hooks/useGenerateKpisFromEnhancedData";
 import { useSemanticKeywords } from "@/hooks/useSemanticExpansion";
+import { useUpdateSelectedKeywords } from "@/hooks/useSelectedKeywords";
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: project, isLoading, error } = useProject(id);
   const { data: semanticKeywords } = useSemanticKeywords(id);
-  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>(project?.selected_keywords || []);
   const generateKpis = useGenerateKpisFromEnhancedData();
+  const updateSelectedKeywords = useUpdateSelectedKeywords();
 
   if (isLoading) {
     return (
@@ -88,6 +90,23 @@ const ProjectDetail = () => {
     return null;
   }
 
+  // Sync selected keywords with project data and persist changes
+  useEffect(() => {
+    if (project?.selected_keywords) {
+      setSelectedKeywords(project.selected_keywords);
+    }
+  }, [project?.selected_keywords]);
+
+  const handleKeywordSelectionChange = async (keywords: string[]) => {
+    setSelectedKeywords(keywords);
+    if (project?.id) {
+      await updateSelectedKeywords.mutateAsync({
+        projectId: project.id,
+        selectedKeywords: keywords,
+      });
+    }
+  };
+
   const handleGenerateKpis = async () => {
     if (!project.investment_thesis) return;
 
@@ -155,28 +174,19 @@ const ProjectDetail = () => {
                 </div>
 
 
-                {/* Action Buttons */}
-                <div className="pt-4 border-t">
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    {canGenerateKpis && (
-                      <Button 
-                        onClick={handleGenerateKpis}
-                        disabled={selectedKeywords.length === 0 || generateKpis.isPending}
-                      >
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        {generateKpis.isPending ? "Generating..." : `Generate KPIs with Enhanced Data (${selectedKeywords.length} keywords)`}
-                      </Button>
-                    )}
-                    {project.has_generated_kpis && (
+                {/* Action Buttons - Only show if not ready to generate KPIs */}
+                {project.has_generated_kpis && (
+                  <div className="pt-4 border-t">
+                    <div className="flex flex-col gap-3 sm:flex-row">
                       <Button asChild>
                         <Link to={`/app/projects/${id}/workbench`}>
                           <Settings className="mr-2 h-4 w-4" />
                           Open KPI Workbench
                         </Link>
                       </Button>
-                    )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </CardContent>
             </Card>
@@ -192,10 +202,36 @@ const ProjectDetail = () => {
             <SemanticKeywordsSection 
               project={project}
               selectedKeywords={selectedKeywords}
-              onKeywordSelectionChange={setSelectedKeywords}
+              onKeywordSelectionChange={handleKeywordSelectionChange}
               showSelection={canGenerateKpis}
             />
           </div>
+
+          {/* Generate KPIs Section - Final step */}
+          {canGenerateKpis && (
+            <div className="mb-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ready to Generate KPIs</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    You have selected {selectedKeywords.length} keywords to enhance your KPI generation. 
+                    Click below to generate a comprehensive KPI framework using AI analysis.
+                  </p>
+                  <Button 
+                    onClick={handleGenerateKpis}
+                    disabled={selectedKeywords.length === 0 || generateKpis.isPending}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {generateKpis.isPending ? "Generating KPIs..." : `Generate KPIs with Enhanced Data (${selectedKeywords.length} keywords selected)`}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     );

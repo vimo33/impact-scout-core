@@ -9,6 +9,7 @@ interface Project {
   family_office_id: string | null;
   family_office_name: string | null;
   has_generated_kpis: boolean;
+  selected_keywords: string[];
 }
 
 export const useProject = (projectId: string | undefined) => {
@@ -28,6 +29,7 @@ export const useProject = (projectId: string | undefined) => {
           created_at,
           family_office_id,
           has_generated_kpis,
+          selected_keywords,
           family_offices:family_office_id(name)
         `)
         .eq("id", projectId)
@@ -44,6 +46,7 @@ export const useProject = (projectId: string | undefined) => {
       return {
         ...data,
         family_office_name: data.family_offices?.name || null,
+        selected_keywords: (data.selected_keywords as string[]) || [],
       };
     },
     enabled: !!projectId,

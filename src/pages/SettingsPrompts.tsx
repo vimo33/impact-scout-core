@@ -86,10 +86,21 @@ const SettingsPrompts = () => {
               <CardContent className="p-6">
                 <div className="text-center py-8">
                   <Settings className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h2 className="text-xl font-semibold mb-2 text-destructive">Error Loading Prompts</h2>
-                  <p className="text-muted-foreground">
-                    Failed to load system prompts. Please refresh the page or try again later.
-                  </p>
+                  {error.message?.includes('insufficient_privilege') || error.message?.includes('policy') ? (
+                    <>
+                      <h2 className="text-xl font-semibold mb-2 text-destructive">Access Denied</h2>
+                      <p className="text-muted-foreground">
+                        Administrator access is required to manage system prompts. Contact your system administrator to request access.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-semibold mb-2 text-destructive">Error Loading Prompts</h2>
+                      <p className="text-muted-foreground">
+                        Failed to load system prompts. Please refresh the page or try again later.
+                      </p>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

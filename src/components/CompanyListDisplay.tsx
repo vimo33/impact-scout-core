@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Chip } from "@/components/ui/chip";
 import { ExternalLink, Building2, MapPin, Plus, TrendingUp } from "lucide-react";
 import { useCompanies } from "@/hooks/useCompanies";
-import { useAddToShortlist, useIsInShortlist } from "@/hooks/useShortlist";
+import { useAddToShortlist, useShortlist } from "@/hooks/useShortlist";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface CompanyListDisplayProps {
@@ -16,6 +16,11 @@ interface CompanyListDisplayProps {
 const CompanyListDisplay = ({ projectId }: CompanyListDisplayProps) => {
   const { data: companies, isLoading, error } = useCompanies(projectId);
   const addToShortlist = useAddToShortlist();
+  const { data: shortlist } = useShortlist(projectId);
+
+  const isInShortlist = (companyId: string) => {
+    return shortlist?.some(item => item.company_id === companyId) || false;
+  };
 
   const handleAddToShortlist = (companyId: string, event: React.MouseEvent) => {
     event.preventDefault();
@@ -104,7 +109,7 @@ const CompanyListDisplay = ({ projectId }: CompanyListDisplayProps) => {
       
       <div className="grid gap-6">
         {companies.map((company) => {
-          const isInShortlist = useIsInShortlist(projectId, company.id);
+          const companyInShortlist = isInShortlist(company.id);
           
           return (
             <Card key={company.id} className="group hover:shadow-md transition-shadow">
@@ -218,13 +223,13 @@ const CompanyListDisplay = ({ projectId }: CompanyListDisplayProps) => {
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
-                        variant={isInShortlist ? "secondary" : "default"}
-                        onClick={(e) => !isInShortlist && handleAddToShortlist(company.id, e)}
-                        disabled={isInShortlist || addToShortlist.isPending}
+                        variant={companyInShortlist ? "secondary" : "default"}
+                        onClick={(e) => !companyInShortlist && handleAddToShortlist(company.id, e)}
+                        disabled={companyInShortlist || addToShortlist.isPending}
                         className="text-xs"
                       >
                         <Plus className="h-3 w-3 mr-1" />
-                        {isInShortlist ? "In Shortlist" : "Add to Shortlist"}
+                        {companyInShortlist ? "In Shortlist" : "Add to Shortlist"}
                       </Button>
                       
                       {company.website_url && (

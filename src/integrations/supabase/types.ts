@@ -19,27 +19,69 @@ export type Database = {
           company_description: string | null
           company_name: string
           created_at: string
+          data_completeness_percentage: number | null
+          entity_type: string | null
+          funding_stage: string | null
+          funding_track: string | null
           id: string
+          key_investors: string[] | null
+          location: string | null
+          missing_kpi_count: number | null
+          mission_statement: string | null
+          opportunity_summary: string | null
           project_id: string
           relevance_score: number | null
+          risk_badges: string[] | null
+          stage_confidence_score: number | null
+          tags: string[] | null
+          technology_summary: string | null
+          total_raised: string | null
           website_url: string | null
         }
         Insert: {
           company_description?: string | null
           company_name: string
           created_at?: string
+          data_completeness_percentage?: number | null
+          entity_type?: string | null
+          funding_stage?: string | null
+          funding_track?: string | null
           id?: string
+          key_investors?: string[] | null
+          location?: string | null
+          missing_kpi_count?: number | null
+          mission_statement?: string | null
+          opportunity_summary?: string | null
           project_id: string
           relevance_score?: number | null
+          risk_badges?: string[] | null
+          stage_confidence_score?: number | null
+          tags?: string[] | null
+          technology_summary?: string | null
+          total_raised?: string | null
           website_url?: string | null
         }
         Update: {
           company_description?: string | null
           company_name?: string
           created_at?: string
+          data_completeness_percentage?: number | null
+          entity_type?: string | null
+          funding_stage?: string | null
+          funding_track?: string | null
           id?: string
+          key_investors?: string[] | null
+          location?: string | null
+          missing_kpi_count?: number | null
+          mission_statement?: string | null
+          opportunity_summary?: string | null
           project_id?: string
           relevance_score?: number | null
+          risk_badges?: string[] | null
+          stage_confidence_score?: number | null
+          tags?: string[] | null
+          technology_summary?: string | null
+          total_raised?: string | null
           website_url?: string | null
         }
         Relationships: [
@@ -279,6 +321,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shortlist: {
+        Row: {
+          added_at: string
+          company_id: string
+          id: string
+          notes: string | null
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          company_id: string
+          id?: string
+          notes?: string | null
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          company_id?: string
+          id?: string
+          notes?: string | null
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       system_prompts: {
         Row: {

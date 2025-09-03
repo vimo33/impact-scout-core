@@ -107,7 +107,7 @@ const CompanyListDisplay = ({ projectId }: CompanyListDisplayProps) => {
         </p>
       </div>
       
-      <div className="grid gap-6">
+      <div className="grid gap-4 sm:gap-6">
         {companies.map((company) => {
           const companyInShortlist = isInShortlist(company.id);
           
@@ -115,20 +115,20 @@ const CompanyListDisplay = ({ projectId }: CompanyListDisplayProps) => {
             <Card key={company.id} className="group hover:shadow-md transition-shadow">
               {/* Header Row */}
               <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
                       <Link 
                         to={`/app/projects/${projectId}/companies/${company.id}`}
                         className="flex items-center gap-2 group-hover:text-primary transition-colors"
                       >
                         <Building2 className="h-5 w-5 text-primary flex-shrink-0" />
-                        <CardTitle className="text-xl truncate">
+                        <CardTitle className="text-lg sm:text-xl truncate">
                           {company.company_name}
                         </CardTitle>
                       </Link>
                       
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="outline" className="text-xs">
                           {company.entity_type || 'Company'}
                         </Badge>
@@ -170,7 +170,7 @@ const CompanyListDisplay = ({ projectId }: CompanyListDisplayProps) => {
               </CardHeader>
 
               <CardContent className="pt-0">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   {/* Left side - Funding snapshot */}
                   <div className="flex items-center gap-4 text-sm">
                     {company.funding_stage && (
@@ -178,16 +178,16 @@ const CompanyListDisplay = ({ projectId }: CompanyListDisplayProps) => {
                         <TrendingUp className="h-3 w-3 text-muted-foreground" />
                         <span className="font-medium">{company.funding_stage}</span>
                         {company.total_raised && (
-                          <span className="text-muted-foreground">• {company.total_raised}</span>
+                          <span className="text-muted-foreground hidden sm:inline">• {company.total_raised}</span>
                         )}
                       </div>
                     )}
                   </div>
 
                   {/* Right side - Scores and actions */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     {/* Scores */}
-                    <div className="flex items-center gap-3 text-sm">
+                    <div className="flex items-center gap-2 sm:gap-3 text-sm flex-wrap">
                       {company.relevance_score !== null && (
                         <div className="flex items-center gap-1">
                           <span className="text-muted-foreground">Match:</span>

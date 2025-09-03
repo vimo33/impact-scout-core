@@ -1,11 +1,4 @@
 import { useLocation, Link } from "react-router-dom";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
 interface ProjectSubNavigationProps {
@@ -40,27 +33,23 @@ const ProjectSubNavigation = ({ projectId }: ProjectSubNavigationProps) => {
   return (
     <div className="border-b border-border bg-card">
       <div className="max-w-6xl mx-auto px-6">
-        <NavigationMenu>
-          <NavigationMenuList className="space-x-1">
-            {navigationItems.map((item) => (
-              <NavigationMenuItem key={item.id}>
-                <Link to={`${basePath}${item.path}`}>
-                  <NavigationMenuLink
-                    className={cn(
-                      navigationMenuTriggerStyle(),
-                      "px-4 py-2",
-                      activeRoute === item.id
-                        ? "bg-accent text-accent-foreground font-medium"
-                        : "hover:bg-accent/50"
-                    )}
-                  >
-                    {item.label}
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
+        <nav className="flex space-x-1 py-2">
+          {navigationItems.map((item) => (
+            <Link
+              key={item.id}
+              to={`${basePath}${item.path}`}
+              className={cn(
+                "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+                "px-4 py-2",
+                activeRoute === item.id
+                  ? "bg-accent text-accent-foreground font-medium"
+                  : "hover:bg-accent/50"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </div>
   );

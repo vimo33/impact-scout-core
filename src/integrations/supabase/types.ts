@@ -22,9 +22,11 @@ export type Database = {
           company_name: string
           contacts: Json | null
           created_at: string
+          customers_partners: Json | null
           data_completeness_percentage: number | null
           employee_count: string | null
           entity_type: string | null
+          evidence: Json | null
           founded_year: number | null
           funding_stage: string | null
           funding_track: string | null
@@ -37,6 +39,7 @@ export type Database = {
           missing_kpi_count: number | null
           mission_statement: string | null
           news_sentiment: Json | null
+          news_sentiment_label: string | null
           opportunity_summary: string | null
           products_solutions: Json | null
           project_id: string
@@ -45,6 +48,7 @@ export type Database = {
           risk_badges: string[] | null
           stage_confidence_score: number | null
           tags: string[] | null
+          team: Json | null
           technology_summary: string | null
           total_raised: string | null
           website_url: string | null
@@ -56,9 +60,11 @@ export type Database = {
           company_name: string
           contacts?: Json | null
           created_at?: string
+          customers_partners?: Json | null
           data_completeness_percentage?: number | null
           employee_count?: string | null
           entity_type?: string | null
+          evidence?: Json | null
           founded_year?: number | null
           funding_stage?: string | null
           funding_track?: string | null
@@ -71,6 +77,7 @@ export type Database = {
           missing_kpi_count?: number | null
           mission_statement?: string | null
           news_sentiment?: Json | null
+          news_sentiment_label?: string | null
           opportunity_summary?: string | null
           products_solutions?: Json | null
           project_id: string
@@ -79,6 +86,7 @@ export type Database = {
           risk_badges?: string[] | null
           stage_confidence_score?: number | null
           tags?: string[] | null
+          team?: Json | null
           technology_summary?: string | null
           total_raised?: string | null
           website_url?: string | null
@@ -90,9 +98,11 @@ export type Database = {
           company_name?: string
           contacts?: Json | null
           created_at?: string
+          customers_partners?: Json | null
           data_completeness_percentage?: number | null
           employee_count?: string | null
           entity_type?: string | null
+          evidence?: Json | null
           founded_year?: number | null
           funding_stage?: string | null
           funding_track?: string | null
@@ -105,6 +115,7 @@ export type Database = {
           missing_kpi_count?: number | null
           mission_statement?: string | null
           news_sentiment?: Json | null
+          news_sentiment_label?: string | null
           opportunity_summary?: string | null
           products_solutions?: Json | null
           project_id?: string
@@ -113,6 +124,7 @@ export type Database = {
           risk_badges?: string[] | null
           stage_confidence_score?: number | null
           tags?: string[] | null
+          team?: Json | null
           technology_summary?: string | null
           total_raised?: string | null
           website_url?: string | null

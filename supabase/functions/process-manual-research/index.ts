@@ -32,6 +32,24 @@ interface CompanyData {
     investors?: string[];
     grants?: any[];
   };
+  products_solutions?: Array<{
+    name: string;
+    description: string;
+    type?: string;
+    status?: string;
+    link_url?: string;
+  }>;
+  customers_partners?: Array<{
+    name: string;
+    type: string;
+    notes?: string;
+    link_url?: string;
+  }>;
+  team?: Array<{
+    name: string;
+    role: string;
+    linkedin_url?: string;
+  }>;
   clinical_activity?: {
     pilots?: Array<{ title?: string; status?: string; participants?: any; duration?: string }>;
     trials?: Array<{ trial_id?: string; title?: string; status?: string; phase?: string }>;
@@ -42,6 +60,13 @@ interface CompanyData {
   };
   publications?: Array<{ title?: string; journal?: string; year?: number; doi?: string; citations?: number }>;
   news_last_12mo?: Array<{ title?: string; date?: string; source?: string; url?: string; sentiment?: string }>;
+  evidence?: {
+    source_references?: string[];
+    corporate_profile?: {
+      press_releases?: string[];
+      technology_summary?: string;
+    };
+  };
   analysis?: {
     relevance_score?: number;
     relevance_score_breakdown?: any;
@@ -289,11 +314,16 @@ serve(async (req) => {
             technology_summary: companyData.technology_summary || null,
             opportunity_summary: opportunitySummary,
             // Complex JSONB fields
+            products_solutions: companyData.products_solutions || [],
+            customers_partners: companyData.customers_partners || [],
+            team: companyData.team || [],
             contacts: contactsArray,
             clinical_activity: companyData.clinical_activity || { pilots: [], trials: [] },
             ip_portfolio: ipPortfolio || { patents: [], key_publications: [] },
             publications: companyData.publications || [],
             news_sentiment: newsSentiment || { recent_news: [], market_sentiment: null },
+            news_sentiment_label: companyData.analysis?.news_sentiment_label || null,
+            evidence: companyData.evidence || {},
             category_completeness: companyData.category_completeness || {},
           })
           .select('id')

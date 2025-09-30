@@ -8,10 +8,13 @@ import { format } from "date-fns";
 import CompanyHeader from "@/components/CompanyHeader";
 import KpiBreakdownTabs from "@/components/KpiBreakdownTabs";
 import { ProductsSolutionsSection } from "@/components/ProductsSolutionsSection";
+import { CustomersPartnersSection } from "@/components/CustomersPartnersSection";
+import { TeamSection } from "@/components/TeamSection";
 import { ClinicalActivitySection } from "@/components/ClinicalActivitySection";
 import { IPPortfolioSection } from "@/components/IPPortfolioSection";
 import { NewsSentimentSection } from "@/components/NewsSentimentSection";
 import { ContactsSection } from "@/components/ContactsSection";
+import { EvidenceReferencesSection } from "@/components/EvidenceReferencesSection";
 import { CategoryCompletenessWidget } from "@/components/CategoryCompletenessWidget";
 import { 
   Building2,
@@ -120,6 +123,12 @@ const CompanyDetail = () => {
             {/* Products & Solutions */}
             <ProductsSolutionsSection products={company.products_solutions} />
 
+            {/* Customers & Partners */}
+            <CustomersPartnersSection customersPartners={company.customers_partners} />
+
+            {/* Team */}
+            <TeamSection team={company.team} />
+
             {/* Clinical Activity */}
             <ClinicalActivitySection clinicalActivity={company.clinical_activity} />
 
@@ -127,10 +136,18 @@ const CompanyDetail = () => {
             <IPPortfolioSection ipPortfolio={company.ip_portfolio} />
 
             {/* News & Sentiment */}
-            <NewsSentimentSection newsSentiment={company.news_sentiment} />
+            <NewsSentimentSection
+              newsSentiment={{
+                recent_news: company.news_sentiment?.recent_news || null,
+                market_sentiment: company.news_sentiment_label || company.news_sentiment?.market_sentiment || null,
+              }}
+            />
 
             {/* Contacts */}
             <ContactsSection contacts={company.contacts} />
+
+            {/* Evidence & References */}
+            <EvidenceReferencesSection evidence={company.evidence} />
           </div>
 
           {/* Right column - Sidebar */}

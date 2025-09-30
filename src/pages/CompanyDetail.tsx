@@ -7,15 +7,17 @@ import { useCompanies } from "@/hooks/useCompanies";
 import { format } from "date-fns";
 import CompanyHeader from "@/components/CompanyHeader";
 import KpiBreakdownTabs from "@/components/KpiBreakdownTabs";
+import { ProductsSolutionsSection } from "@/components/ProductsSolutionsSection";
+import { ClinicalActivitySection } from "@/components/ClinicalActivitySection";
+import { IPPortfolioSection } from "@/components/IPPortfolioSection";
+import { NewsSentimentSection } from "@/components/NewsSentimentSection";
+import { ContactsSection } from "@/components/ContactsSection";
+import { CategoryCompletenessWidget } from "@/components/CategoryCompletenessWidget";
 import { 
-  TrendingUp, 
-  Users, 
-  Award, 
-  Microscope, 
-  FileText, 
-  MessageSquare,
-  Phone,
-  Link as LinkIcon
+  Building2,
+  Calendar,
+  MapPin,
+  Users as UsersIcon
 } from "lucide-react";
 
 const CompanyDetail = () => {
@@ -115,95 +117,20 @@ const CompanyDetail = () => {
             {/* KPI Breakdown */}
             <KpiBreakdownTabs companyId={company.id} />
 
-            {/* Placeholders for future sections */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Customers & Partners
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Customer and partnership data coming soon...
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Products & Solutions */}
+            <ProductsSolutionsSection products={company.products_solutions} />
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Award className="h-5 w-5" />
-                    Clinical & Pilot Activity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Clinical trials and pilot program data coming soon...
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Clinical Activity */}
+            <ClinicalActivitySection clinicalActivity={company.clinical_activity} />
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Microscope className="h-5 w-5" />
-                    Scientific & IP
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Publications and patent data coming soon...
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Scientific & IP */}
+            <IPPortfolioSection ipPortfolio={company.ip_portfolio} />
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
-                    News & Sentiment
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    News analysis and sentiment tracking coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            {/* News & Sentiment */}
+            <NewsSentimentSection newsSentiment={company.news_sentiment} />
 
-            {/* Team & Contacts Placeholder */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Team
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Founder and team information coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Phone className="h-5 w-5" />
-                    Contact Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Contact details coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Contacts */}
+            <ContactsSection contacts={company.contacts} />
           </div>
 
           {/* Right column - Sidebar */}
@@ -255,95 +182,80 @@ const CompanyDetail = () => {
               </CardContent>
             </Card>
 
+            {/* Category Completeness */}
+            <CategoryCompletenessWidget categoryCompleteness={company.category_completeness} />
+
             {/* Funding & Grants */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Funding & Grants
-                </CardTitle>
+                <CardTitle>Funding & Grants</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {company.funding_stage && (
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Stage</span>
-                    <Badge variant="outline">{company.funding_stage}</Badge>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Stage</span>
+                    <Badge>{company.funding_stage}</Badge>
                   </div>
                 )}
-
                 {company.total_raised && (
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Total Raised</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Raised</span>
                     <span className="text-sm font-semibold">{company.total_raised}</span>
                   </div>
                 )}
-
                 {company.key_investors && company.key_investors.length > 0 && (
                   <div>
-                    <span className="text-sm font-medium">Key Investors</span>
-                    <div className="flex flex-wrap gap-1 mt-2">
+                    <span className="text-sm text-muted-foreground block mb-2">Key Investors</span>
+                    <div className="flex flex-wrap gap-1">
                       {company.key_investors.map((investor, index) => (
-                        <Chip key={index} variant="default" className="text-xs">
-                          {investor}
-                        </Chip>
+                        <Chip key={index}>{investor}</Chip>
                       ))}
                     </div>
                   </div>
                 )}
-
-                {!company.funding_stage && !company.total_raised && !company.key_investors?.length && (
-                  <p className="text-muted-foreground text-sm">
-                    Funding information coming soon...
-                  </p>
-                )}
               </CardContent>
             </Card>
 
-            {/* Products & Solutions Placeholder */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Products & Solutions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  Product portfolio information coming soon...
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Evidence & References Placeholder */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LinkIcon className="h-5 w-5" />
-                  Evidence & References
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  Source references and evidence links coming soon...
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Company Meta */}
+            {/* Company Information */}
             <Card>
               <CardHeader>
                 <CardTitle>Company Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Added</span>
-                  <span>{format(new Date(company.created_at), "MMM d, yyyy")}</span>
+              <CardContent className="space-y-3">
+                {company.founded_year && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Founded:</span>
+                    <span className="font-medium">{company.founded_year}</span>
+                  </div>
+                )}
+                {company.employee_count && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <UsersIcon className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Employees:</span>
+                    <span className="font-medium">{company.employee_count}</span>
+                  </div>
+                )}
+                {(company.hq_city || company.hq_country) && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Headquarters:</span>
+                    <span className="font-medium">
+                      {[company.hq_city, company.hq_country].filter(Boolean).join(", ")}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm">
+                  <Building2 className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Added:</span>
+                  <span className="font-medium">{format(new Date(company.created_at), "MMM d, yyyy")}</span>
                 </div>
                 {company.tags && company.tags.length > 0 && (
                   <div>
-                    <span className="text-muted-foreground">Tags</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <span className="text-sm text-muted-foreground block mb-2">Tags</span>
+                    <div className="flex flex-wrap gap-1">
                       {company.tags.map((tag, index) => (
-                        <Chip key={index} variant="primary" className="text-xs">
-                          {tag}
-                        </Chip>
+                        <Chip key={index}>{tag}</Chip>
                       ))}
                     </div>
                   </div>

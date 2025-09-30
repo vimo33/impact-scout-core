@@ -1,6 +1,51 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface ProductSolution {
+  name: string;
+  description: string;
+}
+
+interface ClinicalTrial {
+  trial_id: string;
+  title: string;
+  status: string;
+  phase: string;
+}
+
+interface Pilot {
+  partner: string;
+  description: string;
+  status: string;
+}
+
+interface Patent {
+  patent_number: string;
+  title: string;
+  year: number;
+}
+
+interface Publication {
+  title: string;
+  journal: string;
+  year: number;
+  doi: string;
+}
+
+interface NewsItem {
+  headline: string;
+  date: string;
+  source: string;
+  url: string;
+}
+
+interface Contact {
+  name: string;
+  title: string;
+  email: string;
+  linkedin: string;
+}
+
 interface Company {
   id: string;
   company_name: string;
@@ -23,6 +68,26 @@ interface Company {
   stage_confidence_score: number | null;
   data_completeness_percentage: number | null;
   missing_kpi_count: number | null;
+  founded_year: number | null;
+  employee_count: string | null;
+  hq_city: string | null;
+  hq_country: string | null;
+  products_solutions: ProductSolution[] | null;
+  clinical_activity: {
+    trials: ClinicalTrial[];
+    pilots: Pilot[];
+  } | null;
+  ip_portfolio: {
+    patents: Patent[];
+    key_publications: Publication[];
+  } | null;
+  publications: Publication[] | null;
+  news_sentiment: {
+    recent_news: NewsItem[];
+    market_sentiment: string | null;
+  } | null;
+  contacts: Contact[] | null;
+  category_completeness: Record<string, number> | null;
 }
 
 export const useCompanies = (projectId: string | undefined) => {
@@ -43,7 +108,17 @@ export const useCompanies = (projectId: string | undefined) => {
         throw error;
       }
 
-      return data || [];
+      // Cast JSONB fields to proper types
+      return (data || []).map(company => ({
+        ...company,
+        products_solutions: company.products_solutions as unknown as ProductSolution[] | null,
+        clinical_activity: company.clinical_activity as unknown as { trials: ClinicalTrial[]; pilots: Pilot[] } | null,
+        ip_portfolio: company.ip_portfolio as unknown as { patents: Patent[]; key_publications: Publication[] } | null,
+        publications: company.publications as unknown as Publication[] | null,
+        news_sentiment: company.news_sentiment as unknown as { recent_news: NewsItem[]; market_sentiment: string | null } | null,
+        contacts: company.contacts as unknown as Contact[] | null,
+        category_completeness: company.category_completeness as unknown as Record<string, number> | null,
+      }));
     },
     enabled: !!projectId,
   });

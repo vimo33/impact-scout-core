@@ -16,20 +16,31 @@ export type Database = {
     Tables: {
       companies: {
         Row: {
+          category_completeness: Json | null
+          clinical_activity: Json | null
           company_description: string | null
           company_name: string
+          contacts: Json | null
           created_at: string
           data_completeness_percentage: number | null
+          employee_count: string | null
           entity_type: string | null
+          founded_year: number | null
           funding_stage: string | null
           funding_track: string | null
+          hq_city: string | null
+          hq_country: string | null
           id: string
+          ip_portfolio: Json | null
           key_investors: string[] | null
           location: string | null
           missing_kpi_count: number | null
           mission_statement: string | null
+          news_sentiment: Json | null
           opportunity_summary: string | null
+          products_solutions: Json | null
           project_id: string
+          publications: Json | null
           relevance_score: number | null
           risk_badges: string[] | null
           stage_confidence_score: number | null
@@ -39,20 +50,31 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          category_completeness?: Json | null
+          clinical_activity?: Json | null
           company_description?: string | null
           company_name: string
+          contacts?: Json | null
           created_at?: string
           data_completeness_percentage?: number | null
+          employee_count?: string | null
           entity_type?: string | null
+          founded_year?: number | null
           funding_stage?: string | null
           funding_track?: string | null
+          hq_city?: string | null
+          hq_country?: string | null
           id?: string
+          ip_portfolio?: Json | null
           key_investors?: string[] | null
           location?: string | null
           missing_kpi_count?: number | null
           mission_statement?: string | null
+          news_sentiment?: Json | null
           opportunity_summary?: string | null
+          products_solutions?: Json | null
           project_id: string
+          publications?: Json | null
           relevance_score?: number | null
           risk_badges?: string[] | null
           stage_confidence_score?: number | null
@@ -62,20 +84,31 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          category_completeness?: Json | null
+          clinical_activity?: Json | null
           company_description?: string | null
           company_name?: string
+          contacts?: Json | null
           created_at?: string
           data_completeness_percentage?: number | null
+          employee_count?: string | null
           entity_type?: string | null
+          founded_year?: number | null
           funding_stage?: string | null
           funding_track?: string | null
+          hq_city?: string | null
+          hq_country?: string | null
           id?: string
+          ip_portfolio?: Json | null
           key_investors?: string[] | null
           location?: string | null
           missing_kpi_count?: number | null
           mission_statement?: string | null
+          news_sentiment?: Json | null
           opportunity_summary?: string | null
+          products_solutions?: Json | null
           project_id?: string
+          publications?: Json | null
           relevance_score?: number | null
           risk_badges?: string[] | null
           stage_confidence_score?: number | null

@@ -8,17 +8,74 @@ const corsHeaders = {
 };
 
 interface CompanyData {
+  entity_type?: string;
   company_name: string;
   company_description?: string;
   website_url?: string;
-  relevance_score?: number;
+  hq_city?: string;
+  hq_country?: string;
+  founded_year?: number;
+  employee_count?: number | string;
+  tags?: string[];
+  contacts?: {
+    general_email?: string;
+    phone?: string;
+    address?: string;
+    linkedin_url?: string;
+  } | Array<{ name?: string; title?: string; email?: string; linkedin_url?: string }>;
+  funding?: {
+    track?: string;
+    stage?: string;
+    last_round?: string;
+    last_round_amount_usd?: number;
+    total_funding_usd?: number;
+    investors?: string[];
+    grants?: any[];
+  };
+  clinical_activity?: {
+    pilots?: Array<{ title?: string; status?: string; participants?: any; duration?: string }>;
+    trials?: Array<{ trial_id?: string; title?: string; status?: string; phase?: string }>;
+  };
+  ip_portfolio?: {
+    patent_count?: number;
+    representative_patents?: Array<{ title?: string; patent_number?: string; filing_date?: string; status?: string }>;
+  };
+  publications?: Array<{ title?: string; journal?: string; year?: number; doi?: string; citations?: number }>;
+  news_last_12mo?: Array<{ title?: string; date?: string; source?: string; url?: string; sentiment?: string }>;
+  analysis?: {
+    relevance_score?: number;
+    relevance_score_breakdown?: any;
+    news_sentiment_label?: string;
+    data_completeness_percent?: number;
+    missing_kpis_count?: number;
+    stage_confidence_score?: number;
+    completeness_flag?: string;
+    risks?: string[];
+    opportunity_summary?: string;
+  };
+  category_completeness?: {
+    scientific_technical_percent?: number;
+    operational_percent?: number;
+    financial_percent?: number;
+    impact_percent?: number;
+  };
   kpi_data?: KpiData[];
+  // Legacy fields (direct mapping)
+  relevance_score?: number;
+  location?: string;
+  mission_statement?: string;
+  technology_summary?: string;
+  opportunity_summary?: string;
 }
 
 interface KpiData {
   kpi_name: string;
-  data_value?: string;
+  category?: string;
+  status?: string;
+  data_value?: string | number;
+  unit?: string;
   source_url?: string;
+  source_snippet?: string;
 }
 
 interface ProcessedResults {
@@ -148,7 +205,57 @@ serve(async (req) => {
       try {
         console.log(`Processing company: ${companyData.company_name}`);
 
-        // Insert company record
+        // Transform contacts: object → array format
+        let contactsArray = null;
+        if (companyData.contacts) {
+          if (Array.isArray(companyData.contacts)) {
+            contactsArray = companyData.contacts;
+          } else {
+            // Convert contact object to array format
+            contactsArray = [{
+              name: 'General Contact',
+              email: companyData.contacts.general_email || null,
+              phone: companyData.contacts.phone || null,
+              linkedin_url: companyData.contacts.linkedin_url || null,
+            }];
+          }
+        }
+
+        // Transform news_last_12mo → news_sentiment structure
+        let newsSentiment = null;
+        if (companyData.news_last_12mo && Array.isArray(companyData.news_last_12mo)) {
+          newsSentiment = {
+            recent_news: companyData.news_last_12mo.map(item => ({
+              headline: item.title || '',
+              date: item.date || '',
+              source: item.source || '',
+              url: item.url || '',
+            })),
+            market_sentiment: companyData.analysis?.news_sentiment_label || null,
+          };
+        }
+
+        // Transform IP portfolio
+        let ipPortfolio = null;
+        if (companyData.ip_portfolio) {
+          ipPortfolio = {
+            patents: companyData.ip_portfolio.representative_patents || [],
+            key_publications: companyData.publications || [],
+          };
+        }
+
+        // Extract analysis fields with fallback to direct fields
+        const relevanceScore = companyData.analysis?.relevance_score ?? companyData.relevance_score ?? null;
+        const dataCompleteness = companyData.analysis?.data_completeness_percent ?? null;
+        const stageConfidence = companyData.analysis?.stage_confidence_score ?? null;
+        const missingKpiCount = companyData.analysis?.missing_kpis_count ?? null;
+        const riskBadges = companyData.analysis?.risks || [];
+        const opportunitySummary = companyData.analysis?.opportunity_summary ?? companyData.opportunity_summary ?? null;
+
+        // Convert employee_count to string if it's a number
+        const employeeCount = companyData.employee_count ? String(companyData.employee_count) : null;
+
+        // Insert company record with all fields
         const { data: insertedCompany, error: companyError } = await supabase
           .from('companies')
           .insert({
@@ -156,7 +263,38 @@ serve(async (req) => {
             company_name: companyData.company_name,
             company_description: companyData.company_description || null,
             website_url: companyData.website_url || null,
-            relevance_score: companyData.relevance_score || null
+            entity_type: companyData.entity_type || 'Company',
+            hq_city: companyData.hq_city || null,
+            hq_country: companyData.hq_country || null,
+            location: companyData.hq_city && companyData.hq_country 
+              ? `${companyData.hq_city}, ${companyData.hq_country}` 
+              : (companyData.location || null),
+            founded_year: companyData.founded_year || null,
+            employee_count: employeeCount,
+            tags: companyData.tags || [],
+            relevance_score: relevanceScore,
+            data_completeness_percentage: dataCompleteness,
+            stage_confidence_score: stageConfidence,
+            missing_kpi_count: missingKpiCount,
+            risk_badges: riskBadges,
+            // Funding fields
+            funding_track: companyData.funding?.track || null,
+            funding_stage: companyData.funding?.stage || null,
+            total_raised: companyData.funding?.total_funding_usd 
+              ? `$${(companyData.funding.total_funding_usd / 1000000).toFixed(1)}M` 
+              : null,
+            key_investors: companyData.funding?.investors || [],
+            // Summary fields
+            mission_statement: companyData.mission_statement || null,
+            technology_summary: companyData.technology_summary || null,
+            opportunity_summary: opportunitySummary,
+            // Complex JSONB fields
+            contacts: contactsArray,
+            clinical_activity: companyData.clinical_activity || { pilots: [], trials: [] },
+            ip_portfolio: ipPortfolio || { patents: [], key_publications: [] },
+            publications: companyData.publications || [],
+            news_sentiment: newsSentiment || { recent_news: [], market_sentiment: null },
+            category_completeness: companyData.category_completeness || {},
           })
           .select('id')
           .single();
@@ -185,15 +323,27 @@ serve(async (req) => {
                 continue;
               }
 
+              // Map status values
+              const statusMap: Record<string, string> = {
+                'complete': 'complete',
+                'partial': 'partial',
+                'pending': 'pending',
+                'not_applicable': 'pending',
+              };
+              const kpiStatus = kpiEntry.status ? (statusMap[kpiEntry.status] || 'pending') : 'pending';
+
+              // Convert data_value to string
+              const dataValue = kpiEntry.data_value != null ? String(kpiEntry.data_value) : null;
+
               // Insert KPI data record
               const { error: kpiDataError } = await supabase
                 .from('company_kpi_data')
                 .insert({
                   company_id: companyId,
                   kpi_id: kpiId,
-                  data_value: kpiEntry.data_value || null,
+                  data_value: dataValue,
                   source_url: kpiEntry.source_url || null,
-                  status: 'completed'
+                  status: kpiStatus,
                 });
 
               if (kpiDataError) {
